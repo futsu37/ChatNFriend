@@ -1,10 +1,12 @@
-import jwt
-from backend.core.config import settings
-from datetime import datetime, UTC, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
+
+import jwt
+from pwdlib import PasswordHash
 from pwdlib.hashers.argon2 import Argon2Hasher
 from pwdlib.hashers.bcrypt import BcryptHasher
-from pwdlib import PasswordHash
+
+from backend.core.config import settings
 
 ALGORITHM = "HS256"
 

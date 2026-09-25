@@ -34,6 +34,6 @@ class Settings(BaseSettings):
         )
     #Super User
     FIRST_SUPERUSER_PASSWORD: str
-    FIRST_SUPERUSER_EMAIL: str
+    FIRST_SUPERUSER_USERNAME: str
 
 settings = Settings()
