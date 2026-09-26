@@ -10,6 +10,13 @@ class UserCreate(SQLModel):
     is_active: bool = True
     is_superuser: bool = False
 
+class UserRegister(SQLModel):
+    username: str = Field(min_length=1, max_length=127)
+    password: str = Field(min_length=1, max_length=127)
+
+class UserUpdate(SQLModel):
+    username: str | None = Field(default=None,min_length=1, max_length=127)
+
 class UserPublic(SQLModel):
     id: uuid.UUID
     username: str
