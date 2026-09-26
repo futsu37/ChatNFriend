@@ -27,10 +27,7 @@ def get_users(session: Session,limit: int = 100, offset: int = 0) -> tuple[Seque
     count = count_users(session)
     return session.exec(statement_users).all(), count
 
-def update_user(session: Session, user: User, update_data: UserUpdate) -> User:
-    updated_user_data = update_data.model_dump(exclude_unset=True)
-    update_data.sqlmodel_update(updated_user_data)
-    session.add(user)
+def delete_user(session: Session, user: User):
+    session.delete(user)
     session.commit()
-    session.refresh(user)
-    return user
+    return "User was successfully deleted"

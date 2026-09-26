@@ -14,9 +14,14 @@ class UserRegister(SQLModel):
     username: str = Field(min_length=1, max_length=127)
     password: str = Field(min_length=1, max_length=127)
 
-class UserUpdate(SQLModel):
+class UserUpdateMe(SQLModel):
     username: str | None = Field(default=None,min_length=1, max_length=127)
 
+class UserUpdate(UserUpdateMe):
+    is_active: bool | None = True
+    is_superuser: bool | None = False
+    password: str | None = Field(default=None,min_length=1, max_length=127)
+    
 class UserPublic(SQLModel):
     id: uuid.UUID
     username: str
