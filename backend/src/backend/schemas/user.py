@@ -1,3 +1,4 @@
+from backend.models import Post
 import uuid
 from datetime import datetime
 
@@ -28,6 +29,7 @@ class UserPublic(SQLModel):
     created_at: datetime
     is_active: bool
     is_superuser: bool
+    posts: list[Post]
 
 class UsersPublic(SQLModel):
     data: list[UserPublic]

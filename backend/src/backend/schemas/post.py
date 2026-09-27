@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from sqlmodel import Field, SQLModel
 
@@ -8,6 +9,7 @@ class PostPublic(SQLModel):
     title: str
     description: str
     owner_id: uuid.UUID
+    created_at: datetime
 
 class PostsPublic(SQLModel):
     data: list[PostPublic]

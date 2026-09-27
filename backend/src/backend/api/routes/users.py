@@ -30,6 +30,7 @@ def read_users(session: SessionDep, offset: int = 0, limit: int = 100) -> UsersP
 @router.get('/me',response_model=UserPublic)
 def read_user_me(current_user: CurrentUser):
     return current_user
+    
 @router.post("/signup",response_model=UserPublic)
 def register(session: SessionDep, user_in: UserRegister):
     existing_user = user.get_user_by_username(session,user_in.username)

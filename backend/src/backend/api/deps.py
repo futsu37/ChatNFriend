@@ -10,7 +10,7 @@ from backend.core.config import settings
 from backend.core.database import engine
 from backend.core.security import ALGORITHM
 from backend.models import User
-from backend.schemas.Token import TokenPayload
+from backend.schemas.token import TokenPayload
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
