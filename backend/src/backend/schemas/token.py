@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel  # noqa: N999
+from sqlmodel import SQLModel
 
 
 class Token(SQLModel):

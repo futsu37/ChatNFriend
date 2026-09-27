@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from backend.api.deps import SessionDep
 from backend.core.security import create_access_token
 from backend.crud.login import authenticate
-from backend.schemas.Token import Token
+from backend.schemas.token import Token
 
 router = APIRouter(tags=["Login"])
 
