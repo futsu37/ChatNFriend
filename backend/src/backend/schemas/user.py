@@ -1,8 +1,9 @@
-from backend.models import Post
 import uuid
 from datetime import datetime
 
 from sqlmodel import Field, SQLModel
+
+from backend.models import Post
 
 
 class UserCreate(SQLModel):

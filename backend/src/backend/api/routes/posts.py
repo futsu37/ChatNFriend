@@ -1,9 +1,9 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import col, select
 
 from backend.api.deps import CurrentUser, SessionDep, get_active_superuser
+from backend.crud import post
 from backend.models import Post
 from backend.schemas.post import (
     PostCreate,
@@ -23,12 +23,9 @@ def read_posts(
     offset: int = 0) -> PostsPublic:
     
     if current_user.is_superuser:
-        posts_statement = select(Post).order_by(col(Post.created_at).desc()).offset(offset).limit(limit)
-        posts_db = session.exec(posts_statement).all()
+        posts_db, count = post.get_posts(session,limit,offset)
     else:
-        posts_statement = select(Post).where(Post.owner_id == current_user.id).order_by(col(Post.created_at).desc()).offset(offset).limit(limit)
-        posts_db = session.exec(posts_statement).all()
-    count = posts_db.__len__()
+        posts_db, count = post.get_user_posts(session,current_user.id,limit,offset)
     return PostsPublic(data=posts_db,count=count)
 
 @router.get("/id/{post_id}", response_model=PostPublic)
@@ -40,11 +37,7 @@ def read_post(session: SessionDep, post_id: uuid.UUID):
 
 @router.post("/",response_model=PostPublic)
 def create_post(session: SessionDep,current_user: CurrentUser, post_in: PostCreate):
-    post = Post.model_validate(post_in, update={"owner_id": current_user.id})
-    session.add(post)
-    session.commit()
-    session.refresh(post)
-    return post
+    return post.create_post(session,current_user,post_in)
 
 @router.patch("/me/id/{post_id}",response_model=PostPublic)
 def update_post_me(
@@ -57,12 +50,7 @@ def update_post_me(
         raise HTTPException(status_code=404,detail="Post not found")
     if current_user.id != existing_post.owner_id:
         raise HTTPException(status_code=403,detail="You can only update your posts")
-    update_data = update_in.model_dump(exclude_unset=True)
-    existing_post.sqlmodel_update(update_data)
-    session.add(existing_post)
-    session.commit()
-    session.refresh(existing_post)
-    return existing_post
+    return post.update_post(session,existing_post,update_in)
 @router.patch("/id/{post_id}",dependencies=[Depends(get_active_superuser)],response_model=PostPublic)
 def update_post(
     session: SessionDep, 
@@ -71,12 +59,7 @@ def update_post(
     existing_post = session.get(Post, post_id)
     if not existing_post:
         raise HTTPException(status_code=404,detail="Post not found")
-    update_data = update_in.model_dump(exclude_unset=True)
-    existing_post.sqlmodel_update(update_data)
-    session.add(existing_post)
-    session.commit()
-    session.refresh(existing_post)
-    return existing_post
+    return post.update_post(session,existing_post,update_in)
 
 @router.delete("/id/{post_id}")
 def delete_post(
@@ -88,7 +71,5 @@ def delete_post(
         raise HTTPException(status_code=404,detail="Post not found")
     if not current_user.is_superuser and current_user.id != existing_post.owner_id:
         raise HTTPException(status_code=403,detail="You can only delete your posts")
-    session.delete(existing_post)
-    session.commit()
-    return "Post was successfully deleted"
+    return post.delete_post(session, existing_post)
 
