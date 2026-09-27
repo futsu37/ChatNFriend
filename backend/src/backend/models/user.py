@@ -1,11 +1,14 @@
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 from backend.utils.time import get_datetime_UTC
 
+if TYPE_CHECKING:
+    from backend.models.post import Post
 
 class User(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4,primary_key=True)
@@ -17,3 +20,5 @@ class User(SQLModel, table=True):
     hashed_password: str
     is_active: bool = True
     is_superuser: bool = False
+
+    posts: list["Post"] = Relationship(back_populates="owner",cascade_delete=True)

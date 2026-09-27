@@ -1,11 +1,19 @@
-from backend.core.security import get_hashed_password
 import uuid
-from backend.models import User
+
 from fastapi import APIRouter, Depends, HTTPException
 
-from backend.api.deps import SessionDep, get_active_superuser, CurrentUser
+from backend.api.deps import CurrentUser, SessionDep, get_active_superuser
+from backend.core.security import get_hashed_password
 from backend.crud import user
-from backend.schemas.user import UserCreate, UserPublic, UserRegister, UsersPublic, UserUpdateMe, UserUpdate
+from backend.models import User
+from backend.schemas.user import (
+    UserCreate,
+    UserPublic,
+    UserRegister,
+    UsersPublic,
+    UserUpdate,
+    UserUpdateMe,
+)
 
 router = APIRouter(tags=["Users"],prefix="/users")
 

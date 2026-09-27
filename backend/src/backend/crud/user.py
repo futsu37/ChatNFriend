@@ -4,7 +4,7 @@ from sqlmodel import Session, col, func, select
 
 from backend.core.security import get_hashed_password
 from backend.models import User
-from backend.schemas.user import UserCreate, UserUpdate
+from backend.schemas.user import UserCreate
 
 
 def get_user_by_username(session: Session, username: str) -> User | None:
