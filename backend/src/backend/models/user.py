@@ -8,6 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel
 from backend.utils.time import get_datetime_UTC
 
 if TYPE_CHECKING:
+    from backend.models.comment import Comment
     from backend.models.post import Post
 
 class User(SQLModel, table=True):
@@ -22,3 +23,5 @@ class User(SQLModel, table=True):
     is_superuser: bool = False
 
     posts: list["Post"] = Relationship(back_populates="owner",cascade_delete=True)
+    comments: list["Comment"] = Relationship(back_populates="owner",cascade_delete=True)
+
