@@ -21,5 +21,5 @@ class Comment(SQLModel, table=True):
     owner_id: uuid.UUID = Field(foreign_key="user.id",nullable=False,ondelete="CASCADE")
     post_id: uuid.UUID = Field(foreign_key="post.id",nullable=False,ondelete="CASCADE")
 
-    owner: "User" = Relationship(back_populates="comments", cascade_delete=True)
-    post: "Post" = Relationship(back_populates="comments", cascade_delete=True)
+    owner: "User" = Relationship(back_populates="comments")
+    post: "Post" = Relationship(back_populates="comments")

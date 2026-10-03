@@ -3,8 +3,9 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 
 from backend.api.deps import CurrentUser, SessionDep, get_active_superuser
-from backend.crud import post
+from backend.crud import comment, post
 from backend.models import Post
+from backend.schemas.comment import CommentCreate, CommentPublic
 from backend.schemas.post import (
     PostCreate,
     PostPublic,
@@ -72,4 +73,15 @@ def delete_post(
     if not current_user.is_superuser and current_user.id != existing_post.owner_id:
         raise HTTPException(status_code=403,detail="You can only delete your posts")
     return post.delete_post(session, existing_post)
+
+
+@router.post("/id/{post_id}/comment",response_model=CommentPublic)
+def create_comment(
+    session: SessionDep, 
+    current_user: CurrentUser,
+    post_id: uuid.UUID,
+    comment_in: CommentCreate):
+    return comment.create_comment(session,current_user.id,post_id,comment_in)
+
+
 
