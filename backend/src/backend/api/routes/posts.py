@@ -75,7 +75,7 @@ def delete_post(
     return post.delete_post(session, existing_post)
 
 
-@router.post("/id/{post_id}/comment",response_model=CommentPublic)
+@router.post("/id/comment/{post_id}",response_model=CommentPublic)
 def create_comment(
     session: SessionDep, 
     current_user: CurrentUser,

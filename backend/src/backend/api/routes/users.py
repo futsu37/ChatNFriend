@@ -75,7 +75,7 @@ def find_user_by_username(session: SessionDep, username: str):
         raise HTTPException(status_code=404, detail="User with this username does not exist")
     return existing_user
 @router.patch(
-    "/{user_id}",
+    "/id/{user_id}",
     dependencies=[Depends(get_active_superuser)],
     response_model=UserPublic)
 def update_user_by_id(
@@ -102,7 +102,7 @@ def update_user_by_id(
     session.refresh(existing_user)
     return existing_user
 @router.delete(
-    "/{user_id}",
+    "/id/{user_id}",
     dependencies=[Depends(get_active_superuser)])
 def delete_user_by_id(session: SessionDep, user_id: uuid.UUID):
     existing_user = session.get(User, user_id)

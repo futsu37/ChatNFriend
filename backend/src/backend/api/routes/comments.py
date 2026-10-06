@@ -24,7 +24,7 @@ def read_comments(
     return CommentsPublic(data=comments_db,count=count)
 
 
-@router.post("/id/{comment_id}",response_model=CommentPublic)
+@router.patch("/id/{comment_id}",response_model=CommentPublic)
 def update_comment(
     session: SessionDep, 
     current_user: CurrentUser,
@@ -33,7 +33,7 @@ def update_comment(
     existing_comment = session.get(Comment, comment_id)
     if not existing_comment:
         raise HTTPException(status_code=404,detail="Comment not found")
-    if current_user.id != existing_comment.owner_id:
+    if not current_user.is_superuser and current_user.id != existing_comment.owner_id:
         raise HTTPException(status_code=403,detail="You can only update your comments")
     return comment.update_comment(session,existing_comment,comment_in)
 
