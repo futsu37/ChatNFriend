@@ -3,6 +3,8 @@ from datetime import datetime
 
 from sqlmodel import Field, SQLModel
 
+from backend.schemas.comment import CommentPublic
+
 
 class PostPublic(SQLModel):
     id: uuid.UUID
@@ -10,6 +12,7 @@ class PostPublic(SQLModel):
     description: str
     owner_id: uuid.UUID
     created_at: datetime
+    comments: list[CommentPublic]
 
 class PostsPublic(SQLModel):
     data: list[PostPublic]
