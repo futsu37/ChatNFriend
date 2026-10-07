@@ -18,7 +18,7 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 
 from backend.core.config import settings
-from backend.models import Comment, Post, User  # noqa: F401
+from backend.models import Comment, Friendship, Post, User  # noqa: F401
 from sqlmodel import SQLModel
 
 target_metadata = SQLModel.metadata
