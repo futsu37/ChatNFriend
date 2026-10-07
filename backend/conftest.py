@@ -5,7 +5,7 @@ from backend.api.deps import get_db
 from backend.core.config import settings
 from backend.core.database import init_db
 from backend.main import app
-from backend.models import Comment, Post, User  # noqa: F401
+from backend.models import Comment, Friendship, Post, User  # noqa: F401
 from fastapi.testclient import TestClient
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine

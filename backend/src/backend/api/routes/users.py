@@ -113,5 +113,3 @@ def delete_user_by_id(session: SessionDep, user_id: uuid.UUID):
             status_code=403, detail="Super users are not allowed to delete themselves"
         )
     return user.delete_user(session,existing_user)
-    
-    
