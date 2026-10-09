@@ -9,7 +9,7 @@ from sqlmodel import Field, Relationship, SQLModel
 from backend.utils.time import get_datetime_UTC
 
 if TYPE_CHECKING:
-    from backend.models import Comment, Friendship, Post
+    from backend.models import Comment, Friendship, Message, Post
 
 class User(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4,primary_key=True)
@@ -31,3 +31,5 @@ class User(SQLModel, table=True):
     friendships_receiver: list["Friendship"] = Relationship(
         sa_relationship_kwargs={"foreign_keys": "Friendship.receiver_id"}
         ,back_populates="receiver", cascade_delete=True)
+
+    messages: list["Message"] = Relationship(back_populates="sender")
