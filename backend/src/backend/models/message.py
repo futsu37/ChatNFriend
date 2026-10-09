@@ -18,7 +18,7 @@ class Message(SQLModel, table=True):
         default_factory=get_datetime_UTC
     )
     room_id: uuid.UUID = Field(foreign_key="room.id",ondelete="CASCADE")
-    sender_id: uuid.UUID = Field(foreign_key="user.id",ondelete="SET NULL")
+    sender_id: uuid.UUID = Field(nullable=True,foreign_key="user.id",ondelete="SET NULL")
     
     sender: "User" = Relationship(back_populates="messages")
     room: "Room" = Relationship(back_populates="messages")
