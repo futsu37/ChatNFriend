@@ -8,8 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel
 from backend.utils.time import get_datetime_UTC
 
 if TYPE_CHECKING:
-    from backend.models.comment import Comment
-    from backend.models.user import User
+    from backend.models import Comment, User
 
 class Post(SQLModel,table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4,primary_key=True)
@@ -22,4 +21,4 @@ class Post(SQLModel,table=True):
     )
     
     owner: "User" = Relationship(back_populates="posts")
-    comments: list["Comment"] = Relationship(back_populates="post")
+    comments: list["Comment"] = Relationship(back_populates="post",cascade_delete=True)

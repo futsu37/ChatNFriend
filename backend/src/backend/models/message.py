@@ -8,7 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel
 from backend.utils.time import get_datetime_UTC
 
 if TYPE_CHECKING:
-    from backend.models import User
+    from backend.models import Room, User
 
 class Message(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4,primary_key=True)
@@ -17,6 +17,8 @@ class Message(SQLModel, table=True):
         sa_type=DateTime(timezone=True),
         default_factory=get_datetime_UTC
     )
+    room_id: uuid.UUID = Field(foreign_key="room.id",ondelete="CASCADE")
     sender_id: uuid.UUID = Field(foreign_key="user.id",ondelete="SET NULL")
-
+    
     sender: "User" = Relationship(back_populates="messages")
+    room: "Room" = Relationship(back_populates="messages")
