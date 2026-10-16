@@ -17,4 +17,4 @@ class Room(SQLModel, table=True):
         default_factory=get_datetime_UTC
     )
     messages: list["Message"] = Relationship(back_populates="room",cascade_delete=True)
-    users_in: list["RoomUser"] = Relationship(back_populates="room")
+    users_in: list["RoomUser"] = Relationship(back_populates="room", cascade_delete=True)

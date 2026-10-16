@@ -17,3 +17,13 @@ def create_and_auth_user(*,client, name: str, password: str):
     token_type = response_auth.json()["token_type"]
     auth_headers = {"Authorization":f"{token_type} {access_token}"}
     return auth_headers
+
+def get_user_me(*,client,auth_headers: dict[str,str], username: str):
+    response_get_me = client.get(
+        "/api/v1/users/me",
+        headers=auth_headers
+    )
+    assert response_get_me.status_code == 200
+    assert response_get_me.json()["username"] == username
+    assert "id" in response_get_me.json()
+    return response_get_me.json() 
