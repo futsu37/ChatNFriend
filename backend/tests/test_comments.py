@@ -1,58 +1,32 @@
 from fastapi.testclient import TestClient
 
+from .utils.comment import create_comment
+from .utils.post import create_post
 from .utils.user import create_and_auth_user
 
+name = "test"
+password = "testtest"
 
+post_title = "title1"
+post_desc = "description1"
+
+post_comment = "comment_test"
 def test_create_comment(client: TestClient) -> None:
-    auth_headers = create_and_auth_user(client=client,name="test",password="testtest")
-    response_post_create = client.post(
-        "/api/v1/posts/",
-        headers=auth_headers,
-        json={"title":"title1","description":"description1"})
-    
-    assert response_post_create.status_code == 200
-    assert "id" in response_post_create.json()
-    post_id = response_post_create.json()["id"]
-    response_comment_create = client.post(
-        f"/api/v1/posts/id/comment/{post_id}",
-        headers=auth_headers,
-        json={"content":"comment_test"}
-    )
-    assert response_comment_create.status_code == 200
-    assert response_comment_create.json()["content"] == "comment_test"
+    auth_headers = create_and_auth_user(client=client,name=name,password=password)
+    post = create_post(client=client,auth_headers=auth_headers,title=post_title,desc=post_desc)
+    post_id = post["id"]
+    create_comment(client=client,auth_headers=auth_headers,post_id=post_id,post_comment=post_comment)
 
 def test_update_comment(client: TestClient, superuser_auth_headers: dict[str,str]) -> None:
     auth_headers = create_and_auth_user(client=client,name="test",password="testtest")
-    response_post_create = client.post(
-        "/api/v1/posts/",
-        headers=auth_headers,
-        json={"title":"title1","description":"description1"})
     
-    assert response_post_create.status_code == 200
-    assert "id" in response_post_create.json()
-    post_id = response_post_create.json()["id"]
-    response_comment_create = client.post(
-        f"/api/v1/posts/id/comment/{post_id}",
-        headers=auth_headers,
-        json={"content":"comment_test"}
-    )
-    assert response_comment_create.status_code == 200
-    assert response_comment_create.json()["content"] == "comment_test"
-    assert "post_id" in response_comment_create.json()
-    assert "id" in response_comment_create.json()
-    comment_id = response_comment_create.json()["id"]
+    post = create_post(client=client,auth_headers=auth_headers,title=post_title,desc=post_desc)
+    post_id = post["id"]
+    comment = create_comment(client=client,auth_headers=auth_headers,post_id=post_id,post_comment=post_comment)
+    comment_id = comment["id"]
 
-    response_comment_create = client.post(
-        f"/api/v1/posts/id/comment/{post_id}",
-        headers=superuser_auth_headers,
-        json={"content":"comment_test_SU"}
-    )
-
-    assert response_comment_create.status_code == 200
-    assert response_comment_create.json()["content"] == "comment_test_SU"
-    assert "post_id" in response_comment_create.json()
-    assert "id" in response_comment_create.json()
-    comment_id_SU = response_comment_create.json()["id"]
+    comment_SU = create_comment(client=client,auth_headers=superuser_auth_headers,post_id=post_id,post_comment="comment_test_SU")
+    comment_id_SU = comment_SU["id"]
     
     response_comment_update = client.patch(
         f"/api/v1/comments/id/{comment_id_SU}",
@@ -71,36 +45,13 @@ def test_update_comment(client: TestClient, superuser_auth_headers: dict[str,str
 
 def test_delete_comment(client: TestClient, superuser_auth_headers: dict[str,str]) -> None:
     auth_headers = create_and_auth_user(client=client,name="test",password="testtest")
-    response_post_create = client.post(
-        "/api/v1/posts/",
-        headers=auth_headers,
-        json={"title":"title1","description":"description1"})
-    
-    assert response_post_create.status_code == 200
-    assert "id" in response_post_create.json()
-    post_id = response_post_create.json()["id"]
-    response_comment_create = client.post(
-        f"/api/v1/posts/id/comment/{post_id}",
-        headers=auth_headers,
-        json={"content":"comment_test"}
-    )
-    assert response_comment_create.status_code == 200
-    assert response_comment_create.json()["content"] == "comment_test"
-    assert "post_id" in response_comment_create.json()
-    assert "id" in response_comment_create.json()
-    comment_id = response_comment_create.json()["id"]
+    post = create_post(client=client,auth_headers=auth_headers,title=post_title,desc=post_desc)
+    post_id = post["id"]
+    comment = create_comment(client=client,auth_headers=auth_headers,post_id=post_id,post_comment=post_comment)
+    comment_id = comment["id"]
 
-    response_comment_create = client.post(
-        f"/api/v1/posts/id/comment/{post_id}",
-        headers=superuser_auth_headers,
-        json={"content":"comment_test_SU"}
-    )
-
-    assert response_comment_create.status_code == 200
-    assert response_comment_create.json()["content"] == "comment_test_SU"
-    assert "post_id" in response_comment_create.json()
-    assert "id" in response_comment_create.json()
-    comment_id_SU = response_comment_create.json()["id"]
+    comment_SU = create_comment(client=client,auth_headers=superuser_auth_headers,post_id=post_id,post_comment="comment_test_SU")
+    comment_id_SU = comment_SU["id"]
 
     response_delete = client.delete(
         f"/api/v1/comments/id/{comment_id_SU}",

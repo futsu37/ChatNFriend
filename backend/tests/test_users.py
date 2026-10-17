@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from .utils.user import create_and_auth_user
+from .utils.user import create_and_auth_user, get_user_me
 
 name = "test"
 password = "testtest"
@@ -25,13 +25,8 @@ def test_delete_user(client: TestClient) -> None:
         client=client,
         name=name,
         password=password)
-
-    response_get_me = client.get(
-        "/api/v1/users/me",
-        headers=auth_headers
-    )
-    assert response_get_me.status_code == 200
-    assert response_get_me.json()["username"] == name
+    
+    get_user_me(client=client,auth_headers=auth_headers,username=name)
 
     response_delete = client.delete(
         "/api/v1/users/me",headers=auth_headers)
@@ -52,12 +47,7 @@ def test_update_user(client: TestClient) -> None:
         name=name,
         password=password)
 
-    response_get_me = client.get(
-        "/api/v1/users/me",
-        headers=auth_headers
-    )
-    assert response_get_me.status_code == 200
-    assert response_get_me.json()["username"] == name
+    get_user_me(client=client,auth_headers=auth_headers,username=name)
 
     response_update = client.patch(
         "/api/v1/users/me", 
@@ -66,12 +56,8 @@ def test_update_user(client: TestClient) -> None:
     assert response_update.status_code == 200
     assert response_update.json()["username"] == "test2"
 
-    response_get_me = client.get(
-        "/api/v1/users/me",
-        headers=auth_headers
-    )
-    assert response_get_me.status_code == 200
-    assert response_get_me.json()["username"] == "test2"
+    get_user_me(client=client,auth_headers=auth_headers,username="test2")
+
 
 def test_read_users_superuser(
     client: TestClient, 
