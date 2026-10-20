@@ -7,7 +7,7 @@ from sqlmodel import Field, SQLModel
 class RoomMessagePublic(SQLModel):
     id: uuid.UUID
     content: str
-    sender_id: uuid.UUID
+    sender_id: uuid.UUID | None
     created_at: datetime
 
 class RoomMessagesPublic(SQLModel):
@@ -18,7 +18,7 @@ class MessagePublic(SQLModel):
     id: uuid.UUID
     content: str
     room_id: uuid.UUID
-    sender_id: uuid.UUID
+    sender_id: uuid.UUID | None
     created_at: datetime
 
 class MessagesPublic(SQLModel):
@@ -34,4 +34,4 @@ class MessageCreate(SQLModel):
     sender_id: uuid.UUID
 
 class MessageUpdate(SQLModel):
-    content: str | None = Field(default=None,max_length=1027,nullable=False)
+    content: str = Field(min_length=1,max_length=1027,nullable=False)

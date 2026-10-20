@@ -58,13 +58,12 @@ def delete_room(session: Session, existing_room: Room):
 
 def create_room(session: Session, room_in: RoomCreate, user_id: uuid.UUID) -> Room:
     room = Room.model_validate(room_in)
-    session.add(room)
-    session.commit()
-    session.refresh(room)
     roomUserIn = RoomUserCreate(room_id=room.id,user_id=user_id)
     roomUser = RoomUser.model_validate(roomUserIn)
+    session.add(room)
     session.add(roomUser)
     session.commit()
+    session.refresh(room)
     session.refresh(roomUser)
 
     return room
