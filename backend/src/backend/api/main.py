@@ -9,6 +9,7 @@ from backend.api.routes import (
     rooms,
     users,
     utils,
+    websockets,
 )
 from backend.core.config import settings
 
@@ -22,3 +23,4 @@ api_router.include_router(comments.router)
 api_router.include_router(friendships.router)
 api_router.include_router(rooms.router)
 api_router.include_router(messages.router)
+api_router.include_router(websockets.router)
