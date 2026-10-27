@@ -4,6 +4,7 @@ import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import ValidationError
+from sqlalchemy import Engine
 from sqlmodel import Session
 
 from backend.core.config import settings
@@ -19,10 +20,13 @@ reusable_oauth2 = OAuth2PasswordBearer(
 def get_db():
     with Session(engine) as session:
         yield session
-
+    
+def get_engine():
+    return engine
 
 SessionDep = Annotated[Session,Depends(get_db)]
 TokenDep = Annotated[str, Depends(reusable_oauth2)]
+EngineDep = Annotated[Engine,Depends(get_engine)]
 
 def get_current_user(session: SessionDep, token: TokenDep) -> User:
     try:

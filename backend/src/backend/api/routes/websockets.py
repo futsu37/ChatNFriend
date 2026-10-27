@@ -1,10 +1,12 @@
 import uuid
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
+from sqlalchemy import Engine
+from sqlmodel import Session
 
-from backend.api.deps import SessionDep
+from backend.api.deps import EngineDep, get_current_user
 from backend.crud import room
-from backend.models import Room, User
+from backend.models import Room
 
 router = APIRouter()
 
@@ -12,81 +14,54 @@ history = []
 connections: list[WebSocket] = []
 
 user_room_connections: dict[uuid.UUID,list[WebSocket]] = {}
-@router.websocket("/ws/echo")
-async def echo(websocket: WebSocket) -> None:
-    await websocket.accept()
-    try:
-        connections.append(websocket)
-        while True:
-            text = await websocket.receive_text()
-            history.append(text)
-            [await ws.send_text(text) for ws in connections]
-    except WebSocketDisconnect:
-            print("history: ")
-            [print(message) for message in history]
-            print("connections: ")
-            [print(connection) for connection in connections]
-            history.clear()
-            connections.remove(websocket)
-    finally:
-        if websocket in connections:
-            connections.remove(websocket)
 
-@router.websocket("/ws/authorized/{user_id}")
-async def authorized(
-    session: SessionDep, 
-    websocket: WebSocket, 
-    user_id: uuid.UUID) -> None:
-    existing_user = session.get(User,user_id)
-    if not existing_user:
-        raise HTTPException(status_code=404, detail="User with this id does not exist")
-    await websocket.accept()
-    try:
-        connections.append(websocket)
-        while True:
-            await websocket.receive_text()
-            text = "received by: " + existing_user.username
-            await websocket.send_text(text)
-    except WebSocketDisconnect:
-            connections.remove(websocket)
-    finally:
-        if websocket in connections:
-            connections.remove(websocket)
-
-@router.websocket("/ws/user/id/{user_id}/room/id/{room_id}/")
+@router.websocket("/ws/room/id/{room_id}/")
 async def room_user_connection(
-    session: SessionDep,
     websocket: WebSocket,
-    user_id: uuid.UUID,
+    engine: EngineDep,
     room_id: uuid.UUID) -> None:
     
-    existing_user = session.get(User,user_id)
-    if not existing_user:
-        raise HTTPException(status_code=404, detail="User with this id does not exist")
+    ws_room_check(engine,websocket,room_id)
     
-    existing_room = session.get(Room, room_id)
-    if not existing_room:
-        raise HTTPException(status_code=404,detail="Room not found")
-    
-    user_in_room = room.get_user_in_room(session,room_id, user_id)
-    if not user_in_room:
-        raise HTTPException(status_code=404,detail="The room and user are not related")
     await websocket.accept()
     try:
+        
         if user_room_connections.get(room_id) == None:
             user_room_connections[room_id] = []
+        user_room_connections[room_id].append(websocket)
+
         while True:
-            user_room_connections[room_id].append(websocket)
             message = await websocket.receive_text()
-            await send_message_in_room(message,room_id)
+
+            await send_message_in_room(engine, websocket,message,room_id)
+
     except WebSocketDisconnect:
-        user_room_connections[room_id].remove(websocket)
+        if websocket in user_room_connections[room_id]:
+            user_room_connections[room_id].remove(websocket)
+
     finally:
         if websocket in user_room_connections[room_id]:
             user_room_connections[room_id].remove(websocket)
 
+def ws_room_check(engine: Engine, websocket: WebSocket, room_id: uuid.UUID):
+    with Session(engine) as session:
+        data: str | None = websocket.headers.get("authorization")
+        if data and data.lower().startswith("bearer "):
+            data = data[7:]
+            current_user = get_current_user(session,data)
+        else:
+            raise HTTPException(status_code=403, detail="Could not validate credentials")
+        existing_room = session.get(Room, room_id)
+        if not existing_room:
+            raise HTTPException(status_code=404,detail="Room not found")
 
-async def send_message_in_room(message: str, room_id: uuid.UUID):
+        user_in_room = room.get_user_in_room(session,room_id, current_user.id)
+        if not user_in_room:
+            raise HTTPException(status_code=404,detail="The room and user are not related")
+
+
+async def send_message_in_room(engine: Engine, websocket: WebSocket, message: str, room_id: uuid.UUID):
+    ws_room_check(engine,websocket,room_id)
     connections = user_room_connections[room_id]
     for connection in connections:
         await connection.send_text(message)

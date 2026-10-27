@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 
 import pytest
-from backend.api.deps import get_db
+from backend.api.deps import get_db, get_engine
 from backend.core.config import settings
 from backend.core.database import init_db
 from backend.main import app
@@ -25,8 +25,11 @@ def client() -> Iterator[TestClient]:
             init_db(session)
             yield session
 
+    def get_test_engine():
+        return test_engine
     previous_overrides = app.dependency_overrides.copy()
     app.dependency_overrides[get_db] = get_test_db
+    app.dependency_overrides[get_engine] = get_test_engine
 
     try:
         with TestClient(app) as test_client:
