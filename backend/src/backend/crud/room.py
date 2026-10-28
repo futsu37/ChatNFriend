@@ -38,11 +38,11 @@ def join_room(session: Session, room_id: uuid.UUID, user_id: uuid.UUID) -> RoomU
 
 def send_message(
     session: Session, 
-    message_user_in: MessageCreateUser,
+    user_message_in: MessageCreateUser,
     room_id: uuid.UUID,
     user_id: uuid.UUID) -> Message:
     message_in = MessageCreate(
-        content=message_user_in.content,
+        content=user_message_in.content,
         room_id=room_id,
         sender_id=user_id)
 

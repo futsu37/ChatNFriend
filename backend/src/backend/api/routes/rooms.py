@@ -3,6 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 
 from backend.api.deps import CurrentUser, SessionDep, get_active_superuser
+from backend.api.routes.websockets import disconnect_user_from_room
 from backend.crud import message, room
 from backend.models import Room
 from backend.schemas.message import (
@@ -87,7 +88,7 @@ def send_message(
 @router.delete(
     "/id/{room_id}/users/id/{user_id}",
     dependencies=[Depends(get_active_superuser)])
-def kick_user(session: SessionDep, room_id: uuid.UUID, user_id:uuid.UUID):
+async def kick_user(session: SessionDep, room_id: uuid.UUID, user_id:uuid.UUID):
     existing_room = session.get(Room,room_id)
     if not existing_room:
         raise HTTPException(status_code=404,detail="Room not found")
@@ -95,6 +96,7 @@ def kick_user(session: SessionDep, room_id: uuid.UUID, user_id:uuid.UUID):
     if not user_in_room:
         raise HTTPException(status_code=404,detail="The room and user are not related")
     room.leave_room(session,user_in_room)
+    await disconnect_user_from_room(user_id, room_id)
     return "User was successfully disconnected from the room"
 
 @router.post("/join/id/{room_id}",response_model=RoomUserPublic)
@@ -112,7 +114,7 @@ def join_room(
     return room_user
 
 @router.delete("/leave/id/{room_id}")
-def leave_room(
+async def leave_room(
     session: SessionDep, 
     current_user: CurrentUser,
     room_id: uuid.UUID):
@@ -123,4 +125,5 @@ def leave_room(
     if not user_in_room:
         raise HTTPException(status_code=404,detail="The room and user are not related")
     room.leave_room(session,user_in_room)
+    await disconnect_user_from_room(current_user.id, room_id)
     return "You successfully left the room"

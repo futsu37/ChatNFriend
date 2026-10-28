@@ -26,7 +26,7 @@ class MessagesPublic(SQLModel):
     count: int
 
 class MessageCreateUser(SQLModel):
-    content: str = Field(max_length=1027,nullable=False)
+    content: str = Field(min_length=1, max_length=1027,nullable=False)
 
 class MessageCreate(SQLModel):
     content: str = Field(max_length=1027,nullable=False)

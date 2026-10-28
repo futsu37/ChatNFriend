@@ -56,6 +56,7 @@ def get_room(*,client:TestClient, auth_headers: dict[str,str], room_id: str):
 def leave_room(*,client:TestClient, auth_headers: dict[str,str], room_id: str):
     response_room_leave = client.delete(f"/api/v1/rooms/leave/id/{room_id}",headers=auth_headers)
     assert response_room_leave.status_code == 200
+    
 
 def kick_user(*,client:TestClient, superuser_auth_headers: dict[str,str], room_id: str, user_id: str):
     response_kick_user = client.delete(
