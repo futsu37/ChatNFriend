@@ -15,6 +15,7 @@ import { Route as HomeRouteImport } from './routes/home'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PostsRouteImport } from './routes/posts'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as RoomsRouteImport } from './routes/rooms'
 import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -47,6 +48,11 @@ const RegisterRoute = RegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RoomsRoute = RoomsRouteImport.update({
+  id: '/rooms',
+  path: '/rooms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileUserIdRoute = ProfileUserIdRouteImport.update({
   id: '/profile/$userId',
   path: '/profile/$userId',
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/posts': typeof PostsRoute
   '/register': typeof RegisterRoute
+  '/rooms': typeof RoomsRoute
   '/profile/$userId': typeof ProfileUserIdRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/posts': typeof PostsRoute
   '/register': typeof RegisterRoute
+  '/rooms': typeof RoomsRoute
   '/profile/$userId': typeof ProfileUserIdRoute
 }
 export interface FileRoutesById {
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/posts': typeof PostsRoute
   '/register': typeof RegisterRoute
+  '/rooms': typeof RoomsRoute
   '/profile/$userId': typeof ProfileUserIdRoute
 }
 export interface FileRouteTypes {
@@ -90,6 +99,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/posts'
     | '/register'
+    | '/rooms'
     | '/profile/$userId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/posts'
     | '/register'
+    | '/rooms'
     | '/profile/$userId'
   id:
     | '__root__'
@@ -108,6 +119,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/posts'
     | '/register'
+    | '/rooms'
     | '/profile/$userId'
   fileRoutesById: FileRoutesById
 }
@@ -118,6 +130,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PostsRoute: typeof PostsRoute
   RegisterRoute: typeof RegisterRoute
+  RoomsRoute: typeof RoomsRoute
   ProfileUserIdRoute: typeof ProfileUserIdRoute
 }
 
@@ -165,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rooms': {
+      id: '/rooms'
+      path: '/rooms'
+      fullPath: '/rooms'
+      preLoaderRoute: typeof RoomsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile/$userId': {
       id: '/profile/$userId'
       path: '/profile/$userId'
@@ -182,6 +202,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PostsRoute: PostsRoute,
   RegisterRoute: RegisterRoute,
+  RoomsRoute: RoomsRoute,
   ProfileUserIdRoute: ProfileUserIdRoute,
 }
 export const routeTree = rootRouteImport

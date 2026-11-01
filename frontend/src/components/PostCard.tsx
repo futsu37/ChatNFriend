@@ -3,9 +3,12 @@ import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/rea
 import { Link } from '@tanstack/react-router'
 import {
   createCommentApiV1PostsIdCommentPostIdPost,
+  deleteCommentApiV1CommentsIdCommentIdDelete,
   deletePostApiV1PostsIdPostIdDelete,
   findUserByIdApiV1UsersIdUserIdGet,
+  type CommentPublic,
   type PostPublic,
+  updateCommentApiV1CommentsIdCommentIdPatch,
   updatePostApiV1PostsIdPostIdPatch,
   updatePostMeApiV1PostsMeIdPostIdPatch,
 } from '../client'
@@ -306,19 +309,14 @@ export function PostCard({
                   : 'Loading…')
 
               return (
-                <li key={comment.id} className="rounded-xl bg-slate-50 px-4 py-3">
-                  <p className="text-sm leading-6 text-slate-700">{comment.content}</p>
-                  <p className="mt-2 text-xs text-slate-400">
-                    <Link
-                      to="/profile/$userId"
-                      params={{ userId: comment.owner_id }}
-                      className="font-medium text-slate-500 hover:text-violet-800"
-                    >
-                      {name}
-                    </Link>
-                    <span> · {new Date(comment.created_at).toLocaleString()}</span>
-                  </p>
-                </li>
+                <CommentItem
+                  key={comment.id}
+                  comment={comment}
+                  authorName={name}
+                  currentUserId={currentUserId}
+                  isSuperuser={isSuperuser}
+                  postId={post.id}
+                />
               )
             })}
           </ul>
@@ -365,5 +363,172 @@ export function PostCard({
         )}
       </section>
     </article>
+  )
+}
+
+function CommentItem({
+  comment,
+  authorName,
+  currentUserId,
+  isSuperuser,
+  postId,
+}: {
+  comment: CommentPublic
+  authorName: string
+  currentUserId?: string
+  isSuperuser: boolean
+  postId: string
+}) {
+  const queryClient = useQueryClient()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [content, setContent] = useState(comment.content)
+  const canManage = isSuperuser || comment.owner_id === currentUserId
+  const refreshPostData = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['post', postId] }),
+      queryClient.invalidateQueries({ queryKey: ['posts'] }),
+      queryClient.invalidateQueries({ queryKey: ['myPosts'] }),
+      queryClient.invalidateQueries({ queryKey: ['user'] }),
+    ])
+  }
+  const updateComment = useMutation({
+    mutationFn: async () =>
+      updateCommentApiV1CommentsIdCommentIdPatch({
+        path: { comment_id: comment.id },
+        body: { content: content.trim() },
+        throwOnError: true,
+      }),
+    onSuccess: async () => {
+      setEditing(false)
+      setMenuOpen(false)
+      await refreshPostData()
+    },
+  })
+  const deleteComment = useMutation({
+    mutationFn: async () =>
+      deleteCommentApiV1CommentsIdCommentIdDelete({
+        path: { comment_id: comment.id },
+        throwOnError: true,
+      }),
+    onSuccess: refreshPostData,
+  })
+
+  return (
+    <li className="rounded-xl bg-slate-50 px-4 py-3">
+      {editing ? (
+        <form
+          onSubmit={(event) => {
+            event.preventDefault()
+            if (content.trim() && !updateComment.isPending) {
+              updateComment.mutate()
+            }
+          }}
+        >
+          <label htmlFor={`edit-comment-${comment.id}`} className="sr-only">
+            Edit comment
+          </label>
+          <textarea
+            id={`edit-comment-${comment.id}`}
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
+            maxLength={511}
+            required
+            rows={3}
+            className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+          />
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="submit"
+              disabled={!content.trim() || updateComment.isPending}
+              className="rounded-lg bg-violet-700 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {updateComment.isPending ? 'Saving…' : 'Save'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setContent(comment.content)
+                setEditing(false)
+                updateComment.reset()
+              }}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
+            >
+              Cancel
+            </button>
+          </div>
+          {updateComment.isError && (
+            <p role="alert" className="mt-2 text-xs text-rose-700">
+              Could not update this comment. Please try again.
+            </p>
+          )}
+        </form>
+      ) : (
+        <>
+          <div className="flex items-start gap-2">
+            <p className="min-w-0 flex-1 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">
+              {comment.content}
+            </p>
+            {canManage && (
+              <div className="relative -mr-1 -mt-1 shrink-0">
+                <button
+                  type="button"
+                  aria-label="Comment options"
+                  aria-expanded={menuOpen}
+                  onClick={() => setMenuOpen((open) => !open)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-lg leading-none text-slate-500 transition hover:bg-slate-200 hover:text-slate-800 focus:outline-none focus:ring-4 focus:ring-violet-100"
+                >
+                  ⋯
+                </button>
+                {menuOpen && (
+                  <div className="absolute right-0 top-9 z-10 w-36 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setContent(comment.content)
+                        setEditing(true)
+                        setMenuOpen(false)
+                        updateComment.reset()
+                      }}
+                      className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-violet-50 hover:text-violet-800"
+                    >
+                      Edit comment
+                    </button>
+                    <button
+                      type="button"
+                      disabled={deleteComment.isPending}
+                      onClick={() => {
+                        if (window.confirm('Delete this comment? This cannot be undone.')) {
+                          deleteComment.mutate()
+                          setMenuOpen(false)
+                        }
+                      }}
+                      className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-rose-600 transition hover:bg-rose-50 disabled:opacity-60"
+                    >
+                      {deleteComment.isPending ? 'Deleting…' : 'Delete comment'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <p className="mt-2 text-xs text-slate-400">
+            <Link
+              to="/profile/$userId"
+              params={{ userId: comment.owner_id }}
+              className="font-medium text-slate-500 hover:text-violet-800"
+            >
+              {authorName}
+            </Link>
+            <span> · {new Date(comment.created_at).toLocaleString()}</span>
+          </p>
+        </>
+      )}
+      {deleteComment.isError && (
+        <p role="alert" className="mt-2 text-xs text-rose-700">
+          Could not delete this comment. Please try again.
+        </p>
+      )}
+    </li>
   )
 }
