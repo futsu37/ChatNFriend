@@ -12,12 +12,15 @@
   },
   "dependencies": {
     "@hey-api/client-axios": "^0.9.1",
+    "@hookform/resolvers": "^6.0.2",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-router": "^1.170.46",
     "axios": "^1.21.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "tailwindcss": "^4.3.3"
+    "react-hook-form": "^7.91.0",
+    "tailwindcss": "^4.3.3",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.99.0",

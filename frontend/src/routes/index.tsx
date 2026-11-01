@@ -1,9 +1,13 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { isLoggedIn } from '../hooks/useAuth'
 
 export const Route = createFileRoute('/')({
-  component: RouteComponent,
+  beforeLoad: () => {
+    if (!isLoggedIn()) {
+      throw redirect({ to: '/login' })
+    }
+    else {
+        throw redirect({ to: '/home' })
+    }
+  },
 })
-
-function RouteComponent() {
-  return <div>Hello "/"!</div>
-}
