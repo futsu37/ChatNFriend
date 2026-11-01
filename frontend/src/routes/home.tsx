@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import {
   getFriendshipsApiV1FriendshipsGet,
@@ -75,12 +75,33 @@ function RouteComponent() {
           <p className="mb-3 mt-12 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
             Workspace
           </p>
-          <div className="flex items-center gap-3 rounded-xl bg-violet-50 px-3 py-3 text-sm font-semibold text-violet-800">
+          <Link
+            to="/home"
+            className="flex items-center gap-3 rounded-xl bg-violet-50 px-3 py-3 text-sm font-semibold text-violet-800"
+          >
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-violet-700 shadow-sm">
               ◫
             </span>
             Overview
-          </div>
+          </Link>
+          <Link
+            to="/friendships"
+            className="mt-2 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-violet-800"
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-violet-700">
+              ♡
+            </span>
+            Friendships
+          </Link>
+          <Link
+            to="/posts"
+            className="mt-2 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-violet-800"
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-violet-700">
+              ✎
+            </span>
+            My posts
+          </Link>
 
           <div className="mt-auto rounded-2xl bg-gradient-to-br from-[#322267] to-[#6754b5] p-5 text-white">
             <p className="text-sm font-semibold">Good conversations start with a hello.</p>
@@ -102,13 +123,27 @@ function RouteComponent() {
               <p className="text-sm text-slate-500">Your space</p>
               <p className="mt-1 text-sm font-medium text-slate-700">Overview</p>
             </div>
-            <button
-              type="button"
-              onClick={logout}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-violet-200 hover:text-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-100"
-            >
-              Log out
-            </button>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/friendships"
+                className="rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-200"
+              >
+                Friendships
+              </Link>
+              <Link
+                to="/posts"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-violet-200 hover:text-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-100"
+              >
+                My posts
+              </Link>
+              <button
+                type="button"
+                onClick={logout}
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-violet-200 hover:text-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-100"
+              >
+                Log out
+              </button>
+            </div>
           </header>
 
           <div className="mt-9 flex flex-col justify-between gap-5 sm:mt-12 sm:flex-row sm:items-end">
@@ -248,9 +283,12 @@ function RouteComponent() {
                   </div>
                 </div>
               )}
-              <p className="mt-5 border-t border-slate-100 pt-4 text-xs leading-5 text-slate-400">
-                Friend management will live here as you build out those features.
-              </p>
+              <Link
+                to="/friendships"
+                className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-violet-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-200"
+              >
+                Manage friendships
+              </Link>
             </section>
           </div>
         </section>

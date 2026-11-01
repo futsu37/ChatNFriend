@@ -14,7 +14,7 @@ const handleApiError = (error: Error) => {
       && 
       (
         error["detail"] === "Not authenticated"
-      || error["detail"] === "Could not verify credentials"
+      || error["detail"] === "Could not validate credentials"
     )) {
       localStorage.removeItem("access_token")
       window.location.href = "/login"

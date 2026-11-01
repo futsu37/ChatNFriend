@@ -56,8 +56,8 @@ function Login() {
       <div className="pointer-events-none absolute -left-32 -top-32 h-80 w-80 rounded-full bg-violet-200/50 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -right-24 h-96 w-96 rounded-full bg-indigo-200/50 blur-3xl" />
 
-      <div className="relative grid w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-[0_32px_100px_-40px_rgba(47,37,93,0.35)] md:min-h-[620px] md:grid-cols-[0.95fr_1.05fr]">
-        <aside className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-[#322267] via-[#473389] to-[#6754b5] p-10 text-white md:flex lg:p-12">
+      <div className="relative grid w-full max-w-5xl overflow-hidden rounded-4xl border border-white/80 bg-white shadow-[0_32px_100px_-40px_rgba(47,37,93,0.35)] md:min-h-155 md:grid-cols-[0.95fr_1.05fr]">
+        <aside className="relative hidden flex-col justify-between overflow-hidden bg-linear-to-br from-[#322267] via-[#473389] to-[#6754b5] p-10 text-white md:flex lg:p-12">
           <div className="pointer-events-none absolute -right-20 top-24 h-64 w-64 rounded-full border border-white/10" />
           <div className="pointer-events-none absolute -right-8 top-36 h-48 w-48 rounded-full border border-white/10" />
           <div className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-white/5 blur-2xl" />
@@ -98,7 +98,7 @@ function Login() {
               <p className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-violet-700">
                 Welcome back
               </p>
-              <h1 className="!my-0 !text-3xl !font-semibold !leading-tight !tracking-tight !text-slate-950 sm:!text-4xl">
+              <h1 className="my-0! text-3xl! font-semibold! leading-tight! tracking-tight! text-slate-950! sm:text-4xl!">
                 Log in to your account
               </h1>
               <p className="mt-3 text-base text-slate-500">
