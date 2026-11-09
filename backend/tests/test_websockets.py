@@ -31,6 +31,20 @@ def test_missing_token(client: TestClient):
             pass
     assert exc.value.status_code == 403
 
+def test_subprotocol_token(client: TestClient):
+    auth_headers = create_and_auth_user(client=client, name=name, password=password)
+    room = create_room(client=client,auth_headers=auth_headers,name=room_name)
+    room_id = room["id"]
+    token = auth_headers["Authorization"].split(" ", maxsplit=1)[1]
+
+    with client.websocket_connect(
+        f"/api/v1/ws/room/id/{room_id}/",
+        subprotocols=["chat", f"access_token.{token}"],
+    ) as websocket:
+        assert websocket.accepted_subprotocol == "chat"
+        websocket.send_text(persist_message)
+        assert websocket.receive_json()["content"] == persist_message
+
 def test_not_a_room_member(client: TestClient):
     auth_headers = create_and_auth_user(client=client,name=name,password=password)
     room = create_room(client=client,auth_headers=auth_headers,name=room_name)
@@ -112,6 +126,62 @@ def test_persist_message_multiple_users(client: TestClient):
     assert message["id"] == message_id
     assert message["content"] == persist_message
     assert message["sender_id"] == user_id
+
+def test_message_updates_and_deletes_are_broadcast(client: TestClient):
+    author_headers = create_and_auth_user(
+        client=client,
+        name="message_author",
+        password=password,
+    )
+    reader_headers = create_and_auth_user(
+        client=client,
+        name="message_reader",
+        password=password,
+    )
+    room = create_room(
+        client=client,
+        auth_headers=author_headers,
+        name="message changes",
+    )
+    room_id = room["id"]
+    join_room(client=client, auth_headers=reader_headers, room_id=room_id)
+
+    with client.websocket_connect(
+        f"/api/v1/ws/room/id/{room_id}/",
+        headers=author_headers,
+    ) as author_socket, client.websocket_connect(
+        f"/api/v1/ws/room/id/{room_id}/",
+        headers=reader_headers,
+    ) as reader_socket:
+        author_socket.send_text("before redaction")
+        message = author_socket.receive_json()
+        reader_socket.receive_json()
+
+        redact_response = client.patch(
+            f"/api/v1/messages/id/{message['id']}",
+            headers=author_headers,
+            json={"content": "after redaction"},
+        )
+        assert redact_response.status_code == 200
+        expected_update = {
+            "event": "message_updated",
+            "message": redact_response.json(),
+        }
+        assert author_socket.receive_json() == expected_update
+        assert reader_socket.receive_json() == expected_update
+
+        delete_response = client.delete(
+            f"/api/v1/messages/id/{message['id']}",
+            headers=author_headers,
+        )
+        assert delete_response.status_code == 200
+        expected_delete = {
+            "event": "message_deleted",
+            "room_id": room_id,
+            "message_id": message["id"],
+        }
+        assert author_socket.receive_json() == expected_delete
+        assert reader_socket.receive_json() == expected_delete
 
 def test_connection_after_leaving_room(client: TestClient):
     auth_headers = create_and_auth_user(client=client,name=name,password=password)

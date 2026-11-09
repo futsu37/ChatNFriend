@@ -1,12 +1,43 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
+import { useSyncExternalStore } from "react"
 import { getAccessTokenApiV1LoginAccessTokenPost, readUserMeApiV1UsersMeGet, registerApiV1UsersSignupPost, type UserPublic, type UserRegister } from "../client"
 import type {BodyGetAccessTokenApiV1LoginAccessTokenPost as AccessToken } from "../client"
+
+const authStateChangeEvent = "auth-state-change"
 
 const isLoggedIn = 
 () => {
     return localStorage.getItem("access_token") !== null
 }
+
+const subscribeToAuthState = (onChange: () => void) => {
+    window.addEventListener(authStateChangeEvent, onChange)
+    window.addEventListener("storage", onChange)
+
+    return () => {
+        window.removeEventListener(authStateChangeEvent, onChange)
+        window.removeEventListener("storage", onChange)
+    }
+}
+
+const useIsLoggedIn = () =>
+    useSyncExternalStore(
+        subscribeToAuthState,
+        isLoggedIn,
+        () => false,
+    )
+
+const setAccessToken = (token: string) => {
+    localStorage.setItem("access_token", token)
+    window.dispatchEvent(new Event(authStateChangeEvent))
+}
+
+const clearAccessToken = () => {
+    localStorage.removeItem("access_token")
+    window.dispatchEvent(new Event(authStateChangeEvent))
+}
+
 const useAuth = () => {
     const navigate = useNavigate()
     const queryClient = useQueryClient()
@@ -33,7 +64,7 @@ const useAuth = () => {
     const login = async (data: AccessToken) => {
         const response = await getAccessTokenApiV1LoginAccessTokenPost({body:data, throwOnError: true})
         if (response.data?.access_token !== undefined)
-            localStorage.setItem("access_token",response.data?.access_token)
+            setAccessToken(response.data.access_token)
         
     }
     const loginMutation = useMutation({
@@ -44,7 +75,7 @@ const useAuth = () => {
         onError: () => {console.error("Login mutation Error")}
     })
     const logout = () => {
-        localStorage.removeItem("access_token")
+        clearAccessToken()
         navigate({to: "/login"})
     }
     return {
@@ -54,5 +85,5 @@ const useAuth = () => {
         user,
     }
 }
-export { isLoggedIn }
+export { clearAccessToken, isLoggedIn, useIsLoggedIn }
 export default useAuth

@@ -38,7 +38,13 @@ async def room_user_connection(
     
     user_id = ws_room_check(engine,websocket,room_id)
     user_websocket = UserWebSocket(user_id,websocket)
-    await websocket.accept()
+    offered_protocols = {
+        protocol.strip()
+        for protocol in websocket.headers.get("sec-websocket-protocol", "").split(",")
+    }
+    await websocket.accept(
+        subprotocol="chat" if "chat" in offered_protocols else None,
+    )
     try:
         
         if user_room_connections.get(room_id) == None:
@@ -68,9 +74,20 @@ def ws_room_check(engine: Engine, websocket: WebSocket, room_id: uuid.UUID) -> u
         data: str | None = websocket.headers.get("authorization")
         if data and data.lower().startswith("bearer "):
             data = data[7:]
-            current_user = get_current_user(session,data)
         else:
+            protocols = websocket.headers.get("sec-websocket-protocol", "").split(",")
+            token_protocol = next(
+                (
+                    protocol.strip()
+                    for protocol in protocols
+                    if protocol.strip().startswith("access_token.")
+                ),
+                None,
+            )
+            data = token_protocol.removeprefix("access_token.") if token_protocol else None
+        if not data:
             raise HTTPException(status_code=403, detail="Could not validate credentials")
+        current_user = get_current_user(session,data)
         existing_room = session.get(Room, room_id)
         if not existing_room:
             raise HTTPException(status_code=404,detail="Room not found")
@@ -90,7 +107,35 @@ async def send_message_in_room(
     message_schema = MessageCreateUser(content=message)
     with Session(engine) as session:
         full_message = room.send_message(session=session,user_message_in=message_schema,room_id=room_id,user_id=sender_id)
-    connections = user_room_connections[room_id]
+    await broadcast_room_message(room_id, full_message.model_dump(mode="json"))
+
+
+async def broadcast_room_message(room_id: uuid.UUID, message: dict[str, object]) -> None:
+    connections = user_room_connections.get(room_id, [])
     for connection in connections:
-        await connection.websocket.send_json(full_message.model_dump(mode="json"))
+        await connection.websocket.send_json(message)
+
+
+async def broadcast_message_updated(
+    room_id: uuid.UUID,
+    message: dict[str, object],
+) -> None:
+    await broadcast_room_message(
+        room_id,
+        {"event": "message_updated", "message": message},
+    )
+
+
+async def broadcast_message_deleted(
+    room_id: uuid.UUID,
+    message_id: uuid.UUID,
+) -> None:
+    await broadcast_room_message(
+        room_id,
+        {
+            "event": "message_deleted",
+            "room_id": str(room_id),
+            "message_id": str(message_id),
+        },
+    )
     

@@ -61,65 +61,6 @@ function RouteComponent() {
   return (
     <main className="min-h-screen bg-[#f5f6fb] text-left text-slate-900">
       <div className="mx-auto flex min-h-screen w-full max-w-[1440px]">
-        <aside className="hidden w-72 shrink-0 flex-col border-r border-slate-200/80 bg-white px-6 py-7 lg:flex">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-700 text-lg font-bold text-white shadow-lg shadow-violet-900/20">
-              C
-            </div>
-            <div>
-              <p className="font-semibold tracking-tight text-slate-950">ChatNFriend</p>
-              <p className="text-xs text-slate-500">A place for your people</p>
-            </div>
-          </div>
-
-          <p className="mb-3 mt-12 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-            Workspace
-          </p>
-          <Link
-            to="/home"
-            className="flex items-center gap-3 rounded-xl bg-violet-50 px-3 py-3 text-sm font-semibold text-violet-800"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-violet-700 shadow-sm">
-              ◫
-            </span>
-            Overview
-          </Link>
-          <Link
-            to="/friendships"
-            className="mt-2 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-violet-800"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-violet-700">
-              ♡
-            </span>
-            Friendships
-          </Link>
-          <Link
-            to="/posts"
-            className="mt-2 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-violet-800"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-violet-700">
-              ✎
-            </span>
-            My posts
-          </Link>
-          <Link
-            to="/rooms"
-            className="mt-2 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-violet-800"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-violet-700">
-              ◷
-            </span>
-            Chat rooms
-          </Link>
-
-          <div className="mt-auto rounded-2xl bg-gradient-to-br from-[#322267] to-[#6754b5] p-5 text-white">
-            <p className="text-sm font-semibold">Good conversations start with a hello.</p>
-            <p className="mt-2 text-xs leading-5 text-violet-100/80">
-              Your rooms and friends will show up here as you connect.
-            </p>
-          </div>
-        </aside>
-
         <section className="min-w-0 flex-1 px-5 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
           <header className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 lg:hidden">
@@ -260,10 +201,25 @@ function RouteComponent() {
                   {myRooms.map((room) => (
                     <li key={room.id} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-50 font-semibold text-violet-800">
-                        {room.name.slice(0, 1).toUpperCase()}
+                        <Link
+                          to="/rooms/$roomId"
+                          params={{ roomId: room.id }}
+                          aria-label={`Open ${room.name}`}
+                          className="flex h-full w-full items-center justify-center"
+                        >
+                          {room.name.slice(0, 1).toUpperCase()}
+                        </Link>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-semibold text-slate-800">{room.name}</p>
+                        <p className="truncate font-semibold text-slate-800">
+                          <Link
+                            to="/rooms/$roomId"
+                            params={{ roomId: room.id }}
+                            className="transition hover:text-violet-800"
+                          >
+                            {room.name}
+                          </Link>
+                        </p>
                         <p className="mt-1 text-sm text-slate-500">
                           {room.users_in.length} {room.users_in.length === 1 ? 'member' : 'members'}
                         </p>

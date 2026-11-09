@@ -328,11 +328,26 @@ function RoomsPage() {
                     className="flex flex-col gap-4 py-5 first:pt-1 last:pb-1 sm:flex-row sm:items-center"
                   >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-100 to-indigo-100 font-semibold text-violet-800">
-                      {room.name.slice(0, 1).toUpperCase()}
+                      <Link
+                        to="/rooms/$roomId"
+                        params={{ roomId: room.id }}
+                        aria-label={`Open ${room.name}`}
+                        className="flex h-full w-full items-center justify-center"
+                      >
+                        {room.name.slice(0, 1).toUpperCase()}
+                      </Link>
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-semibold text-slate-900">{room.name}</h3>
+                        <h3 className="font-semibold text-slate-900">
+                          <Link
+                            to="/rooms/$roomId"
+                            params={{ roomId: room.id }}
+                            className="transition hover:text-violet-800"
+                          >
+                            {room.name}
+                          </Link>
+                        </h3>
                         {isMember && (
                           <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                             Joined

@@ -5,6 +5,7 @@ import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@ta
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 import { client } from './client/client.gen'
+import { clearAccessToken } from './hooks/useAuth'
 
 
 
@@ -16,7 +17,7 @@ const handleApiError = (error: Error) => {
         error["detail"] === "Not authenticated"
       || error["detail"] === "Could not validate credentials"
     )) {
-      localStorage.removeItem("access_token")
+      clearAccessToken()
       window.location.href = "/login"
     }
   }
