@@ -11,6 +11,8 @@ import type { ClientOptions as ClientOptions2 } from './types.gen';
  * `setConfig()`. This is useful for example if you're using Next.js
  * to ensure your client always has the correct values.
  */
+const API_URL = import.meta.env.VITE_API_URL ?? "";
+
 export type CreateClientConfig<T extends ClientOptions = ClientOptions2> = (override?: Config<ClientOptions & T>) => Config<Required<ClientOptions> & T>;
 
-export const client: Client = createClient(createConfig<ClientOptions2>({ baseUrl: 'http://localhost:8000' }));
+export const client: Client = createClient(createConfig<ClientOptions2>({ baseUrl: API_URL }));

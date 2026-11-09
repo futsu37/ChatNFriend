@@ -161,9 +161,10 @@ function RoomPage() {
       if (!active) return
 
       try {
+        const apiBaseUrl = client.getConfig().baseUrl || window.location.origin
         const socketUrl = new URL(
           `/api/v1/ws/room/id/${roomId}/`,
-          client.getConfig().baseUrl,
+          apiBaseUrl,
         )
         socketUrl.protocol = socketUrl.protocol === 'https:' ? 'wss:' : 'ws:'
         socket = new WebSocket(socketUrl, ['chat', `access_token.${accessToken}`])
