@@ -1,39 +1,21 @@
 import uuid
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
-from sentry_sdk.utils import json_dumps
 from sqlalchemy import Engine
 from sqlmodel import Session
 
 from backend.api.deps import EngineDep, get_current_user
-from backend.core.app import app
 from backend.crud import room
+from backend.events.chat_connections import (
+    UserWebSocket,
+    user_room_connections,
+)
+from backend.events.redis_events import publish_chat_event
 from backend.models import Room
 from backend.schemas.message import MessageCreateUser
 from backend.schemas.redis import RedisEvent
 
 router = APIRouter()
-class UserWebSocket:
-    user_id: uuid.UUID
-    websocket: WebSocket
-    def __init__(self, user_id: uuid.UUID, websocket: WebSocket):
-        self.user_id = user_id
-        self.websocket = websocket
-
-
-
-user_room_connections: dict[uuid.UUID,list[UserWebSocket]] = {}
-
-
-async def disconnect_user_from_room(user_id: uuid.UUID, room_id: uuid.UUID) -> None:
-    room_connections = user_room_connections.get(room_id, [])
-    for connection in room_connections.copy():
-        if connection.user_id == user_id:
-            room_connections.remove(connection)
-            await connection.websocket.close(code=1008, reason="Room membership revoked")
-    if not room_connections:
-        user_room_connections.pop(room_id, None)
-
 
 @router.websocket("/ws/room/id/{room_id}/")
 async def room_user_connection(
@@ -112,37 +94,10 @@ async def send_message_in_room(
     message_schema = MessageCreateUser(content=message)
     with Session(engine) as session:
         full_message = room.send_message(session=session,user_message_in=message_schema,room_id=room_id,user_id=sender_id)
-        event = RedisEvent(event="message_created",room_id=room_id,message=full_message)
-        await app.state.redis.publish("chat:events", json_dumps(event.model_dump(mode="json")))
-    await broadcast_room_message(room_id, full_message.model_dump(mode="json"))
-
-
-async def broadcast_room_message(room_id: uuid.UUID, message: dict[str, object]) -> None:
-    connections = user_room_connections.get(room_id, [])
-    for connection in connections:
-        await connection.websocket.send_json(message)
-
-
-async def broadcast_message_updated(
-    room_id: uuid.UUID,
-    message: dict[str, object],
-) -> None:
-    await broadcast_room_message(
-        room_id,
-        {"event": "message_updated", "message": message},
-    )
-
-
-async def broadcast_message_deleted(
-    room_id: uuid.UUID,
-    message_id: uuid.UUID,
-) -> None:
-    await broadcast_room_message(
-        room_id,
-        {
-            "event": "message_deleted",
-            "room_id": str(room_id),
-            "message_id": str(message_id),
-        },
-    )
+        event = RedisEvent(
+            event="message_created",
+            room_id=room_id,
+            message=full_message,
+        )
+    await publish_chat_event(websocket.app.state.redis, event)
     

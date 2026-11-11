@@ -1,10 +1,11 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from backend.api.deps import CurrentUser, SessionDep, get_active_superuser
-from backend.api.routes.websockets import disconnect_user_from_room
 from backend.crud import message, room
+from backend.events.chat_connections import disconnect_user_from_room
+from backend.events.redis_events import publish_chat_event
 from backend.models import Room
 from backend.schemas.message import (
     MessageCreateUser,
@@ -12,6 +13,7 @@ from backend.schemas.message import (
     RoomMessagePublic,
     RoomMessagesPublic,
 )
+from backend.schemas.redis import RedisEvent
 from backend.schemas.room import RoomCreate, RoomPublic, RoomsPublic
 from backend.schemas.room_user import RoomUserPublic
 
@@ -71,8 +73,9 @@ def delete_room(
     return "Room was successfully deleted"
 
 @router.post("/message/id/{room_id}",response_model=MessagePublic)
-def send_message(
+async def send_message(
     session: SessionDep, 
+    request: Request,
     current_user: CurrentUser,
     room_id: uuid.UUID,
     message_user_in: MessageCreateUser):
@@ -82,7 +85,16 @@ def send_message(
     user_in_room = room.get_user_in_room(session,room_id, current_user.id)
     if not user_in_room:
         raise HTTPException(status_code=403,detail="You have to join room first before sending any message there")
-    return room.send_message(session,message_user_in,room_id,current_user.id)
+    created_message = room.send_message(session,message_user_in,room_id,current_user.id)
+    await publish_chat_event(
+        request.app.state.redis,
+        RedisEvent(
+            event="message_created",
+            room_id=room_id,
+            message=MessagePublic.model_validate(created_message),
+        ),
+    )
+    return created_message
 
 
 @router.delete(

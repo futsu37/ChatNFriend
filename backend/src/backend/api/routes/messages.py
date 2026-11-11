@@ -1,14 +1,12 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from backend.api.deps import CurrentUser, SessionDep, get_active_superuser
-from backend.api.routes.websockets import (
-    broadcast_message_deleted,
-    broadcast_message_updated,
-)
+from backend.events.redis_events import publish_chat_event
 from backend.models import Message
 from backend.schemas.message import MessagePublic, MessageUpdate
+from backend.schemas.redis import RedisEvent
 
 router = APIRouter(prefix="/messages",tags=["Messages"])
 
@@ -27,6 +25,7 @@ def read_message(session: SessionDep, message_id: uuid.UUID):
     response_model=MessagePublic)
 async def redact_message(
     session: SessionDep,
+    request: Request,
     current_user:CurrentUser, 
     message_id: uuid.UUID, 
     message_update: MessageUpdate):
@@ -39,14 +38,23 @@ async def redact_message(
     session.add(existing_message)
     session.commit()
     session.refresh(existing_message)
-    await broadcast_message_updated(
-        existing_message.room_id,
-        MessagePublic.model_validate(existing_message).model_dump(mode="json"),
+    await publish_chat_event(
+        request.app.state.redis,
+        RedisEvent(
+            event="message_updated",
+            room_id=existing_message.room_id,
+            message=MessagePublic.model_validate(existing_message),
+        ),
     )
     return existing_message
 
 @router.delete("/id/{message_id}",)
-async def delete_message(session: SessionDep,current_user:CurrentUser, message_id: uuid.UUID):
+async def delete_message(
+    session: SessionDep,
+    request: Request,
+    current_user: CurrentUser,
+    message_id: uuid.UUID,
+):
     existing_message = session.get(Message,message_id)
     if not existing_message:
         raise HTTPException(status_code=404,detail="Message not found")
@@ -55,5 +63,12 @@ async def delete_message(session: SessionDep,current_user:CurrentUser, message_i
     room_id = existing_message.room_id
     session.delete(existing_message)
     session.commit()
-    await broadcast_message_deleted(room_id, message_id)
+    await publish_chat_event(
+        request.app.state.redis,
+        RedisEvent(
+            event="message_deleted",
+            room_id=room_id,
+            message_id=message_id,
+        ),
+    )
     return "Message was successfully deleted"
