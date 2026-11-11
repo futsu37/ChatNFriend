@@ -1,13 +1,16 @@
 import uuid
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
+from sentry_sdk.utils import json_dumps
 from sqlalchemy import Engine
 from sqlmodel import Session
 
 from backend.api.deps import EngineDep, get_current_user
+from backend.core.app import app
 from backend.crud import room
 from backend.models import Room
 from backend.schemas.message import MessageCreateUser
+from backend.schemas.redis import RedisEvent
 
 router = APIRouter()
 class UserWebSocket:
@@ -16,6 +19,8 @@ class UserWebSocket:
     def __init__(self, user_id: uuid.UUID, websocket: WebSocket):
         self.user_id = user_id
         self.websocket = websocket
+
+
 
 user_room_connections: dict[uuid.UUID,list[UserWebSocket]] = {}
 
@@ -107,6 +112,8 @@ async def send_message_in_room(
     message_schema = MessageCreateUser(content=message)
     with Session(engine) as session:
         full_message = room.send_message(session=session,user_message_in=message_schema,room_id=room_id,user_id=sender_id)
+        event = RedisEvent(event="message_created",room_id=room_id,message=full_message)
+        await app.state.redis.publish("chat:events", json_dumps(event.model_dump(mode="json")))
     await broadcast_room_message(room_id, full_message.model_dump(mode="json"))
 
 
