@@ -37,4 +37,8 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER_PASSWORD: str
     FIRST_SUPERUSER_USERNAME: str
 
+    #Redis
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+
 settings = Settings()

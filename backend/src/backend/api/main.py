@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from backend.api.routes import (
     comments,
     friendships,
+    health_check,
     login,
     messages,
     posts,
@@ -24,3 +25,4 @@ api_router.include_router(friendships.router)
 api_router.include_router(rooms.router)
 api_router.include_router(messages.router)
 api_router.include_router(websockets.router)
+api_router.include_router(health_check.router)
