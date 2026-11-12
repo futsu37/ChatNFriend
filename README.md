@@ -54,7 +54,7 @@ Prerequisites: Docker Engine and the Docker Compose plugin.
 1. Clone the repository and enter its directory:
 
    ```bash
-   git clone https://github.com/futsu37/ChatNFriend.git ChatNFriend
+   git clone https://github.com/futsu37/ChatNFriend.git
    cd ChatNFriend
    ```
 
