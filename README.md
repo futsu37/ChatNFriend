@@ -46,7 +46,7 @@ The main learning focus for this project was backend development, especially Web
 ## Video showcase
 
 ```markdown
-[![Watch the ChatNFriend demo](docs/chatnfriend-demo.gif)]
+![Watch the ChatNFriend demo](docs/chatnfriend-demo.gif)
 ```
 
 ## Run with Docker Compose
