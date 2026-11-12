@@ -46,10 +46,8 @@ The main learning focus for this project was backend development, especially Web
 ## Video showcase
 
 ```markdown
-[![Watch the ChatNFriend demo](docs/chatnfriend-demo.gif)](YOUR_VIDEO_URL)
+[![Watch the ChatNFriend demo](docs/chatnfriend-demo.gif)]
 ```
-
-NO VIDEO YET
 
 ## Run with Docker Compose
 
@@ -58,7 +56,7 @@ Prerequisites: Docker Engine and the Docker Compose plugin.
 1. Clone the repository and enter its directory:
 
    ```bash
-   git clone <repository-url> ChatNFriend
+   git clone https://github.com/futsu37/ChatNFriend.git ChatNFriend
    cd ChatNFriend
    ```
 
